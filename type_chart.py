@@ -6,7 +6,6 @@ TYPE_ORDER = [
     "岩石", "幽靈", "龍", "惡", "鋼", "妖精",
 ]
 
-# Same type chart encoded in the original Tkinter application.
 _RAW = [
     "111111111111231121",
     "122100111110212101",

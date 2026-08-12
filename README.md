@@ -2,26 +2,12 @@
 
 Pokémon GO query web app built with Streamlit.
 
-## Project structure
+## This version
 
-```text
-PokeQ/
-├── app.py
-├── utils.py
-├── type_chart.py
-├── requirements.txt
-├── assets/
-│   └── style.css
-└── data/
-    ├── summary.parquet
-    ├── quick.parquet
-    └── main.parquet
-```
-
-## Streamlit deployment
-
-- Repository: `wilsony0917/PokeQ`
-- Branch: `main`
-- Main file path: `app.py`
-
-The app reads only the three Parquet files under `data/`.
+- The Pokémon table is clickable.
+- Clicking a row immediately changes the selected Pokémon.
+- Removed the separate Pokémon dropdown.
+- Removed the extra sort dropdown and descending checkbox.
+- Removed the duplicated stat cards.
+- Moved the selected Pokémon name/type/artwork above the result table.
+- Moved Quick Move and Main Move upward to align with the result table.

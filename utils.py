@@ -10,24 +10,11 @@ TYPE_ORDER = [
 ]
 
 TYPE_COLORS = {
-    "一般": "#A8A77A",
-    "火": "#EE8130",
-    "水": "#6390F0",
-    "電": "#F7D02C",
-    "草": "#7AC74C",
-    "冰": "#96D9D6",
-    "格鬥": "#C22E28",
-    "毒": "#A33EA1",
-    "地面": "#E2BF65",
-    "飛行": "#A98FF3",
-    "超能": "#F95587",
-    "蟲": "#A6B91A",
-    "岩石": "#B6A136",
-    "幽靈": "#735797",
-    "龍": "#6F35FC",
-    "惡": "#705746",
-    "鋼": "#B7B7CE",
-    "妖精": "#D685AD",
+    "一般": "#A8A77A", "火": "#EE8130", "水": "#6390F0", "電": "#F7D02C",
+    "草": "#7AC74C", "冰": "#96D9D6", "格鬥": "#C22E28", "毒": "#A33EA1",
+    "地面": "#E2BF65", "飛行": "#A98FF3", "超能": "#F95587", "蟲": "#A6B91A",
+    "岩石": "#B6A136", "幽靈": "#735797", "龍": "#6F35FC", "惡": "#705746",
+    "鋼": "#B7B7CE", "妖精": "#D685AD",
 }
 
 
@@ -53,9 +40,7 @@ def load_all_data(data_dir):
     ]:
         missing = required - set(df.columns)
         if missing:
-            raise ValueError(
-                f"{label}.parquet 缺少欄位：{', '.join(sorted(missing))}"
-            )
+            raise ValueError(f"{label}.parquet 缺少欄位：{', '.join(sorted(missing))}")
 
     for col in ["名字", "屬性", "quick", "main"]:
         summary[col] = summary[col].fillna("").astype(str)

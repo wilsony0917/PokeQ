@@ -3,6 +3,7 @@
     padding-top: 2rem;
     padding-bottom: 2rem;
 }
+
 .type-badge {
     display: inline-block;
     color: white;
@@ -13,8 +14,7 @@
     font-weight: 700;
     font-size: 0.92rem;
 }
-div[data-testid="stMetric"] {
-    border: 1px solid rgba(128, 128, 128, 0.25);
-    padding: 0.7rem;
-    border-radius: 0.8rem;
+
+div[data-testid="stImage"] img {
+    object-fit: contain;
 }
