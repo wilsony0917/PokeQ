@@ -139,20 +139,24 @@ with left:
         if c in display.columns
     ]
 
-    # Click a row to update the selected Pokémon immediately.
+    # Click ANY CELL in the table to update the selected Pokémon immediately.
+    # single-cell is used intentionally: Streamlit's single-row mode selects
+    # through the checkbox at the far left, while users naturally click cells.
     event = st.dataframe(
         display[show_cols],
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         height=680,
         on_select="rerun",
-        selection_mode="single-row",
+        selection_mode="single-cell",
         key="pokemon_table",
     )
 
-    selected_rows = event.selection.rows
-    if selected_rows:
-        pos = selected_rows[0]
+    selected_cells = event.selection.cells
+    if selected_cells:
+        # Each selected cell is (original_row_position, column_name).
+        # Streamlit preserves the original row position even after browser sorting.
+        pos = selected_cells[0][0]
         if 0 <= pos < len(display):
             clicked_name = str(display.iloc[pos]["名字"])
             if clicked_name != st.session_state.selected_name:
