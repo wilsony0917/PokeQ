@@ -176,7 +176,7 @@ else:
                 q[qcols],
                 width="stretch",
                 hide_index=True,
-                height=220,
+                height=540,
             )
 
     with main_col:
@@ -190,7 +190,7 @@ else:
                 m[mcols],
                 width="stretch",
                 hide_index=True,
-                height=220,
+                height=540,
             )
 
     with matchup_col:
@@ -209,7 +209,7 @@ else:
                 matchup,
                 width="stretch",
                 hide_index=True,
-                height=220,
+                height=540,
             )
 
 # -------------------------------------------------------------------
@@ -231,7 +231,7 @@ event = st.dataframe(
     display[show_cols],
     width="stretch",
     hide_index=True,
-    height=520,
+    height=300,
     on_select="rerun",
     selection_mode="single-cell",
     key="pokemon_table",

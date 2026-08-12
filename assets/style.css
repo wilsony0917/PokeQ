@@ -49,3 +49,7 @@ hr {
     margin-top: 0.5rem !important;
     margin-bottom: 0.5rem !important;
 }
+
+
+/* v5.1: prioritize the three upper tables.
+   The result table is intentionally shorter to keep all key tables visible. */
