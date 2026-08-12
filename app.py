@@ -8,7 +8,11 @@ from type_chart import matchup_for_types
 
 BASE = Path(__file__).resolve().parent
 
-st.set_page_config(page_title="PokeQ", page_icon="⚡", layout="wide")
+st.set_page_config(
+    page_title="PokeQ",
+    page_icon="⚡",
+    layout="wide",
+)
 
 css_path = BASE / "assets" / "style.css"
 if css_path.exists():
@@ -22,6 +26,9 @@ summary, quick, main = load_all_data(BASE / "data")
 st.title("⚡ PokeQ")
 st.caption("Pokémon GO Query")
 
+# -------------------------------------------------------------------
+# Sidebar
+# -------------------------------------------------------------------
 with st.sidebar:
     st.header("查詢條件")
 
@@ -75,6 +82,9 @@ with st.sidebar:
         key="main_selected",
     )
 
+# -------------------------------------------------------------------
+# Filtering
+# -------------------------------------------------------------------
 result = summary.copy()
 
 if keyword:
@@ -104,30 +114,53 @@ else:
         st.session_state.selected_name = str(result.iloc[0]["名字"])
     selected_name = st.session_state.selected_name
 
-# Selected Pokémon summary moved above the result table.
-if selected_name is not None:
-    row = result[result["名字"].astype(str) == selected_name].iloc[0]
+# -------------------------------------------------------------------
+# Top panel: info on left, artwork on right
+# -------------------------------------------------------------------
+top_left, top_right = st.columns([1.65, 1.0], gap="large")
 
-    summary_left, summary_right = st.columns([4.8, 1.2], gap="small")
+with top_left:
+    if selected_name is None:
+        st.info("沒有符合條件的 Pokémon。")
+    else:
+        row = result[result["名字"].astype(str) == selected_name].iloc[0]
 
-    with summary_left:
+        st.markdown('<div class="pokemon-info-panel">', unsafe_allow_html=True)
         st.markdown(f"## {selected_name}")
         st.markdown(
             type_badges_html(row.get("屬性", "")),
             unsafe_allow_html=True,
         )
 
-    with summary_right:
+        st.write("")
+        s1, s2, s3, s4, s5 = st.columns(5)
+        s1.metric("攻擊", int(row["攻擊"]) if pd.notna(row.get("攻擊")) else "-")
+        s2.metric("防禦", int(row["防禦"]) if pd.notna(row.get("防禦")) else "-")
+        s3.metric("耐力", int(row["耐力"]) if pd.notna(row.get("耐力")) else "-")
+        s4.metric("里程", int(row["里程"]) if pd.notna(row.get("里程")) else "-")
+        evo = row.get("進化")
+        s5.metric("進化", int(evo) if pd.notna(evo) else "-")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+with top_right:
+    if selected_name is not None:
+        row = result[result["名字"].astype(str) == selected_name].iloc[0]
         number = str(row.get("編號", "")).replace("#", "").strip()
+
         if number.isdigit():
             sprite_url = (
                 "https://raw.githubusercontent.com/PokeAPI/sprites/"
                 f"master/sprites/pokemon/other/official-artwork/{int(number)}.png"
             )
-            st.image(sprite_url, width=150)
 
-st.write("")
+            # Center artwork in the whole right column.
+            img_l, img_c, img_r = st.columns([1, 1.6, 1])
+            with img_c:
+                st.image(sprite_url, width=220)
 
+# -------------------------------------------------------------------
+# Main panel: clickable result table on left; moves/matchup on right
+# -------------------------------------------------------------------
 left, right = st.columns([1.65, 1.0], gap="large")
 
 with left:
@@ -135,13 +168,13 @@ with left:
 
     show_cols = [
         c for c in
-        ["編號", "名字", "屬性", "攻擊", "防禦", "耐力", "里程", "進化", "quick", "main"]
+        [
+            "編號", "名字", "屬性", "攻擊", "防禦",
+            "耐力", "里程", "進化", "quick", "main"
+        ]
         if c in display.columns
     ]
 
-    # Click ANY CELL in the table to update the selected Pokémon immediately.
-    # single-cell is used intentionally: Streamlit's single-row mode selects
-    # through the checkbox at the far left, while users naturally click cells.
     event = st.dataframe(
         display[show_cols],
         width="stretch",
@@ -154,8 +187,6 @@ with left:
 
     selected_cells = event.selection.cells
     if selected_cells:
-        # Each selected cell is (original_row_position, column_name).
-        # Streamlit preserves the original row position even after browser sorting.
         pos = selected_cells[0][0]
         if 0 <= pos < len(display):
             clicked_name = str(display.iloc[pos]["名字"])
@@ -164,31 +195,38 @@ with left:
                 st.rerun()
 
 with right:
-    # Quick/Main moved upward to align with the result table.
     if selected_name is None:
         st.info("沒有符合條件的 Pokémon。")
     else:
         st.markdown("### Quick Move")
         q = quick[quick["名字"].astype(str) == selected_name].copy()
+
         if q.empty:
             st.caption("無 Quick Move 資料")
         else:
-            qcols = [c for c in ["招名", "屬性", "傷害", "CP", "EPS"] if c in q.columns]
+            qcols = [
+                c for c in ["招名", "屬性", "傷害", "CP", "EPS"]
+                if c in q.columns
+            ]
             st.dataframe(
                 q[qcols],
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
 
         st.markdown("### Main Move")
         m = main[main["名字"].astype(str) == selected_name].copy()
+
         if m.empty:
             st.caption("無 Main Move 資料")
         else:
-            mcols = [c for c in ["招名", "屬性", "傷害"] if c in m.columns]
+            mcols = [
+                c for c in ["招名", "屬性", "傷害"]
+                if c in m.columns
+            ]
             st.dataframe(
                 m[mcols],
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
 
@@ -208,8 +246,11 @@ with right:
         else:
             st.dataframe(
                 matchup,
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
 
-st.caption("Data source: data/summary.parquet, data/quick.parquet, data/main.parquet")
+st.caption(
+    "Data source: data/summary.parquet, "
+    "data/quick.parquet, data/main.parquet"
+)

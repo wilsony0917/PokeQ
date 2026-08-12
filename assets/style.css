@@ -1,6 +1,6 @@
 
 .block-container {
-    padding-top: 2rem;
+    padding-top: 1.8rem;
     padding-bottom: 2rem;
 }
 
@@ -17,4 +17,19 @@
 
 div[data-testid="stImage"] img {
     object-fit: contain;
+}
+
+div[data-testid="stMetric"] {
+    border: 1px solid rgba(128, 128, 128, 0.22);
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.75rem;
+}
+
+/* Compact the top information area so Quick/Main start near the result table. */
+div[data-testid="stMetricValue"] {
+    font-size: 1.55rem;
+}
+
+div[data-testid="stMetricLabel"] {
+    font-size: 0.82rem;
 }
