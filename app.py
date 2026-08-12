@@ -27,7 +27,7 @@ st.title("⚡ PokeQ")
 st.caption("Pokémon GO Query")
 
 # -------------------------------------------------------------------
-# Sidebar
+# Sidebar filters
 # -------------------------------------------------------------------
 with st.sidebar:
     st.header("查詢條件")
@@ -115,125 +115,86 @@ else:
     selected_name = st.session_state.selected_name
 
 # -------------------------------------------------------------------
-# Top panel: info on left, artwork on right
+# Compact top row:
+# Pokémon image/info + Quick Move + Main Move + matchup
 # -------------------------------------------------------------------
-top_left, top_right = st.columns([1.65, 1.0], gap="large")
+info_col, quick_col, main_col, matchup_col = st.columns(
+    [0.90, 1.20, 1.20, 1.20],
+    gap="medium",
+)
 
-with top_left:
-    if selected_name is None:
+if selected_name is None:
+    with info_col:
         st.info("沒有符合條件的 Pokémon。")
-    else:
-        row = result[result["名字"].astype(str) == selected_name].iloc[0]
+else:
+    row = result[result["名字"].astype(str) == selected_name].iloc[0]
 
-        st.markdown('<div class="pokemon-info-panel">', unsafe_allow_html=True)
-        st.markdown(f"## {selected_name}")
-        st.markdown(
-            type_badges_html(row.get("屬性", "")),
-            unsafe_allow_html=True,
-        )
-
-        st.write("")
-        s1, s2, s3, s4, s5 = st.columns(5)
-        s1.metric("攻擊", int(row["攻擊"]) if pd.notna(row.get("攻擊")) else "-")
-        s2.metric("防禦", int(row["防禦"]) if pd.notna(row.get("防禦")) else "-")
-        s3.metric("耐力", int(row["耐力"]) if pd.notna(row.get("耐力")) else "-")
-        s4.metric("里程", int(row["里程"]) if pd.notna(row.get("里程")) else "-")
-        evo = row.get("進化")
-        s5.metric("進化", int(evo) if pd.notna(evo) else "-")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-with top_right:
-    if selected_name is not None:
-        row = result[result["名字"].astype(str) == selected_name].iloc[0]
+    with info_col:
+        # Artwork moved to the left.
         number = str(row.get("編號", "")).replace("#", "").strip()
-
         if number.isdigit():
             sprite_url = (
                 "https://raw.githubusercontent.com/PokeAPI/sprites/"
                 f"master/sprites/pokemon/other/official-artwork/{int(number)}.png"
             )
+            st.image(sprite_url, width=150)
 
-            # Center artwork in the whole right column.
-            img_l, img_c, img_r = st.columns([1, 1.6, 1])
-            with img_c:
-                st.image(sprite_url, width=220)
+        st.markdown(f"### {selected_name}")
+        st.markdown(
+            type_badges_html(row.get("屬性", "")),
+            unsafe_allow_html=True,
+        )
 
-# -------------------------------------------------------------------
-# Main panel: clickable result table on left; moves/matchup on right
-# -------------------------------------------------------------------
-left, right = st.columns([1.65, 1.0], gap="large")
+        # No metric cards: compact inline stats only.
+        stats = []
+        for label, col in [
+            ("攻", "攻擊"),
+            ("防", "防禦"),
+            ("耐", "耐力"),
+            ("里", "里程"),
+        ]:
+            value = row.get(col)
+            if pd.notna(value):
+                stats.append(f"{label} {int(value)}")
 
-with left:
-    st.subheader(f"搜尋結果 · {len(result)}")
+        evo = row.get("進化")
+        stats.append(f"進 {int(evo) if pd.notna(evo) else '-'}")
 
-    show_cols = [
-        c for c in
-        [
-            "編號", "名字", "屬性", "攻擊", "防禦",
-            "耐力", "里程", "進化", "quick", "main"
-        ]
-        if c in display.columns
-    ]
+        st.markdown(
+            f'<div class="compact-stats">{" · ".join(stats)}</div>',
+            unsafe_allow_html=True,
+        )
 
-    event = st.dataframe(
-        display[show_cols],
-        width="stretch",
-        hide_index=True,
-        height=680,
-        on_select="rerun",
-        selection_mode="single-cell",
-        key="pokemon_table",
-    )
-
-    selected_cells = event.selection.cells
-    if selected_cells:
-        pos = selected_cells[0][0]
-        if 0 <= pos < len(display):
-            clicked_name = str(display.iloc[pos]["名字"])
-            if clicked_name != st.session_state.selected_name:
-                st.session_state.selected_name = clicked_name
-                st.rerun()
-
-with right:
-    if selected_name is None:
-        st.info("沒有符合條件的 Pokémon。")
-    else:
+    with quick_col:
         st.markdown("### Quick Move")
         q = quick[quick["名字"].astype(str) == selected_name].copy()
-
         if q.empty:
             st.caption("無 Quick Move 資料")
         else:
-            qcols = [
-                c for c in ["招名", "屬性", "傷害", "CP", "EPS"]
-                if c in q.columns
-            ]
+            qcols = [c for c in ["招名", "屬性", "傷害", "CP", "EPS"] if c in q.columns]
             st.dataframe(
                 q[qcols],
                 width="stretch",
                 hide_index=True,
+                height=220,
             )
 
+    with main_col:
         st.markdown("### Main Move")
         m = main[main["名字"].astype(str) == selected_name].copy()
-
         if m.empty:
             st.caption("無 Main Move 資料")
         else:
-            mcols = [
-                c for c in ["招名", "屬性", "傷害"]
-                if c in m.columns
-            ]
+            mcols = [c for c in ["招名", "屬性", "傷害"] if c in m.columns]
             st.dataframe(
                 m[mcols],
                 width="stretch",
                 hide_index=True,
+                height=220,
             )
 
-        st.divider()
+    with matchup_col:
         st.markdown("### 屬性相剋")
-
-        row = result[result["名字"].astype(str) == selected_name].iloc[0]
         attrs = [
             x.strip()
             for x in str(row.get("屬性", "")).split(",")
@@ -248,7 +209,42 @@ with right:
                 matchup,
                 width="stretch",
                 hide_index=True,
+                height=220,
             )
+
+# -------------------------------------------------------------------
+# Search results moved directly under the move/matchup row.
+# Click any cell to update selected Pokémon.
+# -------------------------------------------------------------------
+st.subheader(f"搜尋結果 · {len(result)}")
+
+show_cols = [
+    c for c in
+    [
+        "編號", "名字", "屬性", "攻擊", "防禦",
+        "耐力", "里程", "進化", "quick", "main"
+    ]
+    if c in display.columns
+]
+
+event = st.dataframe(
+    display[show_cols],
+    width="stretch",
+    hide_index=True,
+    height=520,
+    on_select="rerun",
+    selection_mode="single-cell",
+    key="pokemon_table",
+)
+
+selected_cells = event.selection.cells
+if selected_cells:
+    pos = selected_cells[0][0]
+    if 0 <= pos < len(display):
+        clicked_name = str(display.iloc[pos]["名字"])
+        if clicked_name != st.session_state.selected_name:
+            st.session_state.selected_name = clicked_name
+            st.rerun()
 
 st.caption(
     "Data source: data/summary.parquet, "
