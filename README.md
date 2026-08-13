@@ -1,17 +1,11 @@
-# PokeQ v5 Compact Layout
+# PokeQ v4
 
-This version focuses on fitting all key tables in one screen.
+Pokémon GO query web app built with Streamlit.
 
-Changes:
-- Removed stat cards.
-- Moved Pokémon artwork to the left.
-- Moved Quick Move and Main Move above the search result table.
-- Moved type matchup up beside the move tables.
-- Kept the result table clickable: click any cell to update the selected Pokémon.
-- Reduced vertical spacing and table heights.
+## v4 layout
 
-
-## v5.1
-- Quick Move / Main Move / type matchup tables increased to 540 px height.
-- Search result table reduced to 300 px height.
-- Goal: show the complete 18-row type matchup table in the main viewport.
+- Click any cell in the Pokémon table to select that Pokémon.
+- Pokémon name, type and basic stats are grouped in the upper-left panel.
+- Official artwork is centered in the upper-right panel.
+- Quick Move / Main Move / type matchup start directly beside the result table.
+- Removed the redundant Pokémon selector and duplicate stat section.
