@@ -1,51 +1,35 @@
 
 .block-container {
-    padding-top: 1.3rem;
-    padding-bottom: 1.2rem;
-}
-
-h1 {
-    margin-bottom: 0.15rem !important;
+    padding-top: 1.8rem;
+    padding-bottom: 2rem;
 }
 
 .type-badge {
     display: inline-block;
     color: white;
-    padding: 0.22rem 0.62rem;
+    padding: 0.28rem 0.72rem;
     border-radius: 999px;
-    margin-right: 0.28rem;
-    margin-bottom: 0.18rem;
+    margin-right: 0.35rem;
+    margin-bottom: 0.25rem;
     font-weight: 700;
-    font-size: 0.86rem;
-}
-
-.compact-stats {
-    margin-top: 0.45rem;
-    font-size: 0.90rem;
-    font-weight: 600;
-    opacity: 0.88;
-    white-space: normal;
-}
-
-div[data-testid="stImage"] {
-    margin-bottom: 0.15rem;
+    font-size: 0.92rem;
 }
 
 div[data-testid="stImage"] img {
     object-fit: contain;
 }
 
-/* Keep dataframe and headings compact so all panels fit in one screen. */
-div[data-testid="stDataFrame"] {
-    margin-bottom: 0.15rem;
+div[data-testid="stMetric"] {
+    border: 1px solid rgba(128, 128, 128, 0.22);
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.75rem;
 }
 
-h3 {
-    margin-top: 0.15rem !important;
-    margin-bottom: 0.35rem !important;
+/* Compact the top information area so Quick/Main start near the result table. */
+div[data-testid="stMetricValue"] {
+    font-size: 1.55rem;
 }
 
-hr {
-    margin-top: 0.5rem !important;
-    margin-bottom: 0.5rem !important;
+div[data-testid="stMetricLabel"] {
+    font-size: 0.82rem;
 }
