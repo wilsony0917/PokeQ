@@ -7,7 +7,7 @@ from utils import TYPE_ORDER, apply_text_filter, load_all_data
 from type_chart import matchup_for_types
 
 BASE = Path(__file__).resolve().parent
-VERSION = "v4.1"
+VERSION = "v4.2"
 
 st.set_page_config(page_title=f"PokeQ {VERSION}", page_icon="⚡", layout="wide")
 
@@ -18,20 +18,21 @@ if css_path.exists():
 summary, quick, main = load_all_data(BASE / "data")
 
 # -------------------------------------------------------------------
-# Compact header
-# -------------------------------------------------------------------
-st.markdown(
-    f'<div class="pokeq-title"><span class="pokeq-bolt">⚡</span>'
-    f'<span class="pokeq-name">PokeQ</span><span class="pokeq-version">{VERSION}</span></div>',
-    unsafe_allow_html=True,
-)
-
-# -------------------------------------------------------------------
-# Sidebar
+# Sidebar: title + image + filters
 # -------------------------------------------------------------------
 with st.sidebar:
-    st.header("查詢條件")
+    st.markdown(
+        f'<div class="pokeq-title"><span class="pokeq-bolt">⚡</span>'
+        f'<span class="pokeq-name">PokeQ</span><span class="pokeq-version">{VERSION}</span></div>'
+        f'<div class="pokeq-subtitle">Pokémon GO Query</div>',
+        unsafe_allow_html=True,
+    )
 
+    # Selected Pokémon is determined after filtering below.
+    # Reserve a placeholder here so artwork appears at the top-left of the sidebar.
+    image_slot = st.empty()
+
+    st.header("查詢條件")
     keyword = st.text_input("Pokémon 名稱", placeholder="例如：妙蛙種子、超夢", label_visibility="collapsed")
 
     st.divider()
@@ -74,9 +75,7 @@ else:
         st.session_state.selected_name = str(result.iloc[0]["名字"])
     selected_name = st.session_state.selected_name
 
-# -------------------------------------------------------------------
-# Artwork only — top-right, pulled upward
-# -------------------------------------------------------------------
+# Fill sidebar artwork after selected Pokémon is known.
 if selected_name is not None:
     row = result[result["名字"].astype(str) == selected_name].iloc[0]
     number = str(row.get("編號", "")).replace("#", "").strip()
@@ -85,71 +84,74 @@ if selected_name is not None:
             "https://raw.githubusercontent.com/PokeAPI/sprites/"
             f"master/sprites/pokemon/other/official-artwork/{int(number)}.png"
         )
-        _, img_col = st.columns([5.7, 1.0], gap="small")
-        with img_col:
+        with image_slot.container():
             st.image(sprite_url, width=145)
 
 # -------------------------------------------------------------------
-# Main panel — moved upward by removing the old Pokémon info section
+# Top row: Quick Move / Main Move / matchup
 # -------------------------------------------------------------------
-left, right = st.columns([1.65, 1.0], gap="large")
+quick_col, main_col, matchup_col = st.columns([1.05, 1.05, 0.95], gap="medium")
 
-with left:
-    st.subheader(f"搜尋結果 · {len(result)}")
-
-    show_cols = [
-        c for c in ["編號", "名字", "屬性", "攻擊", "防禦", "耐力", "里程", "進化", "quick", "main"]
-        if c in display.columns
-    ]
-
-    event = st.dataframe(
-        display[show_cols],
-        width="stretch",
-        hide_index=True,
-        height=680,
-        on_select="rerun",
-        selection_mode="single-cell",
-        key="pokemon_table",
-    )
-
-    selected_cells = event.selection.cells
-    if selected_cells:
-        pos = selected_cells[0][0]
-        if 0 <= pos < len(display):
-            clicked_name = str(display.iloc[pos]["名字"])
-            if clicked_name != st.session_state.selected_name:
-                st.session_state.selected_name = clicked_name
-                st.rerun()
-
-with right:
-    if selected_name is None:
+if selected_name is None:
+    with quick_col:
         st.info("沒有符合條件的 Pokémon。")
-    else:
+else:
+    row = result[result["名字"].astype(str) == selected_name].iloc[0]
+
+    with quick_col:
         st.markdown("### Quick Move")
         q = quick[quick["名字"].astype(str) == selected_name].copy()
         if q.empty:
             st.caption("無 Quick Move 資料")
         else:
             qcols = [c for c in ["招名", "屬性", "傷害", "CP", "EPS"] if c in q.columns]
-            st.dataframe(q[qcols], width="stretch", hide_index=True)
+            st.dataframe(q[qcols], width="stretch", hide_index=True, height=165)
 
+    with main_col:
         st.markdown("### Main Move")
         m = main[main["名字"].astype(str) == selected_name].copy()
         if m.empty:
             st.caption("無 Main Move 資料")
         else:
             mcols = [c for c in ["招名", "屬性", "傷害"] if c in m.columns]
-            st.dataframe(m[mcols], width="stretch", hide_index=True)
+            st.dataframe(m[mcols], width="stretch", hide_index=True, height=165)
 
-        st.divider()
+    with matchup_col:
         st.markdown("### 屬性相剋")
-        row = result[result["名字"].astype(str) == selected_name].iloc[0]
         attrs = [x.strip() for x in str(row.get("屬性", "")).split(",") if x.strip()]
         matchup = matchup_for_types(attrs)
-
         if matchup.empty:
             st.caption("無法計算屬性相剋")
         else:
-            st.dataframe(matchup, width="stretch", hide_index=True)
+            st.dataframe(matchup, width="stretch", hide_index=True, height=390)
+
+# -------------------------------------------------------------------
+# Search results below top tables
+# -------------------------------------------------------------------
+st.subheader(f"搜尋結果 · {len(result)}")
+
+show_cols = [
+    c for c in ["編號", "名字", "屬性", "攻擊", "防禦", "耐力", "里程", "進化", "quick", "main"]
+    if c in display.columns
+]
+
+event = st.dataframe(
+    display[show_cols],
+    width="stretch",
+    hide_index=True,
+    height=560,
+    on_select="rerun",
+    selection_mode="single-cell",
+    key="pokemon_table",
+)
+
+selected_cells = event.selection.cells
+if selected_cells:
+    pos = selected_cells[0][0]
+    if 0 <= pos < len(display):
+        clicked_name = str(display.iloc[pos]["名字"])
+        if clicked_name != st.session_state.selected_name:
+            st.session_state.selected_name = clicked_name
+            st.rerun()
 
 st.caption("Data source: data/summary.parquet, data/quick.parquet, data/main.parquet")

@@ -1,39 +1,43 @@
 
-/* v4.1 — compact version based strictly on the v4 layout */
+/* PokeQ v4.2 — v4-based layout with title/artwork in sidebar
+   and Quick/Main/Matchup above the search results */
+
 .block-container {
-    padding-top: 0.45rem;
-    padding-bottom: 1.25rem;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    padding-top: 0.65rem;
+    padding-bottom: 1.2rem;
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
 }
 
-/* Smaller title, pushed upward/left, with version number. */
 .pokeq-title {
     display: flex;
     align-items: baseline;
-    gap: 0.42rem;
-    margin: 0 0 -0.25rem 0;
-    padding: 0;
+    gap: 0.38rem;
+    margin: 0 0 0.05rem 0;
 }
 .pokeq-bolt {
     font-size: 1.55rem;
     line-height: 1;
 }
 .pokeq-name {
-    font-size: 1.78rem;
+    font-size: 1.75rem;
     font-weight: 760;
     line-height: 1.05;
 }
 .pokeq-version {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 600;
-    opacity: 0.55;
+    opacity: 0.58;
+}
+.pokeq-subtitle {
+    font-size: 0.76rem;
+    opacity: 0.65;
+    margin: 0 0 0.2rem 0;
 }
 
-/* Sidebar: labels requested in the red boxes are hidden via label_visibility.
-   Tighten spacing so the controls remain clear after removing those labels. */
+/* Sidebar */
 section[data-testid="stSidebar"] .block-container {
-    padding-top: 0.65rem;
+    padding-top: 0.55rem;
 }
 section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
     gap: 0.42rem;
@@ -41,26 +45,19 @@ section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
 section[data-testid="stSidebar"] hr {
     margin: 0.55rem 0 0.65rem 0;
 }
-
-/* Artwork pulled toward the top. */
-div[data-testid="stImage"] {
-    margin-top: -1.65rem;
-    margin-bottom: -0.55rem;
+section[data-testid="stSidebar"] div[data-testid="stImage"] {
+    margin-top: 0.1rem;
+    margin-bottom: 0.25rem;
 }
-div[data-testid="stImage"] img {
+section[data-testid="stSidebar"] div[data-testid="stImage"] img {
     object-fit: contain;
 }
 
-/* Pull the orange-box content upward. */
-div[data-testid="stHorizontalBlock"] {
-    margin-top: 0;
-}
+/* Main tables */
 h3 {
-    margin-top: 0.1rem !important;
+    margin-top: 0.05rem !important;
     margin-bottom: 0.35rem !important;
 }
-
-/* Preserve the v4 table appearance. */
 div[data-testid="stDataFrame"] {
     margin-bottom: 0.15rem;
 }
