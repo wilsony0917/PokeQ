@@ -1,14 +1,13 @@
 
-/* PokeQ v4.2 — v4-based layout with title/artwork in sidebar
-   and Quick/Main/Matchup above the search results */
-
+/* PokeQ v4.3 — based on v4 layout */
 .block-container {
-    padding-top: 0.65rem;
-    padding-bottom: 1.2rem;
-    padding-left: 1.2rem;
-    padding-right: 1.2rem;
+    padding-top: 0.85rem;
+    padding-bottom: 1.1rem;
+    padding-left: 1.15rem;
+    padding-right: 1.15rem;
 }
 
+/* Sidebar title */
 .pokeq-title {
     display: flex;
     align-items: baseline;
@@ -32,10 +31,10 @@
 .pokeq-subtitle {
     font-size: 0.76rem;
     opacity: 0.65;
-    margin: 0 0 0.2rem 0;
+    margin-bottom: 0.2rem;
 }
 
-/* Sidebar */
+/* Sidebar compact spacing */
 section[data-testid="stSidebar"] .block-container {
     padding-top: 0.55rem;
 }
@@ -53,11 +52,14 @@ section[data-testid="stSidebar"] div[data-testid="stImage"] img {
     object-fit: contain;
 }
 
-/* Main tables */
+/* Main area */
 h3 {
-    margin-top: 0.05rem !important;
-    margin-bottom: 0.35rem !important;
+    margin-top: 0.55rem !important;
+    margin-bottom: 0.4rem !important;
 }
 div[data-testid="stDataFrame"] {
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.1rem;
+}
+.search-gap {
+    height: 0.85rem;
 }
