@@ -1,11 +1,11 @@
-# PokeQ v4
+# PokeQ v4.1
 
-Pokémon GO query web app built with Streamlit.
+This build is based on the v4 interface.
 
-## v4 layout
-
-- Click any cell in the Pokémon table to select that Pokémon.
-- Pokémon name, type and basic stats are grouped in the upper-left panel.
-- Official artwork is centered in the upper-right panel.
-- Quick Move / Main Move / type matchup start directly beside the result table.
-- Removed the redundant Pokémon selector and duplicate stat section.
+Changes:
+- Removed the large Pokémon information/stat-card section.
+- Removed sidebar field labels highlighted in red while keeping the controls.
+- Reduced the PokeQ title size and added version `v4.1`.
+- Pulled the title and Pokémon artwork upward.
+- Pulled the search-result / Quick Move / Main Move / matchup area upward.
+- Kept the v4 clickable result table behavior and the original parquet structure.
