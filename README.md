@@ -9,3 +9,9 @@ Changes:
 - Search Results removes the `quick` and `main` columns.
 - Type matchup occupies the right column and is tall enough to show all 18 rows without vertical scrolling.
 - Search result table remains clickable.
+
+
+## v4.4
+- Quick Move / Main Move / 屬性相剋 headings moved down.
+- Quick Move and Main Move show about 10 rows.
+- Search Results shows about 20 rows.

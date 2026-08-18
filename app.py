@@ -7,7 +7,7 @@ from utils import TYPE_ORDER, apply_text_filter, load_all_data
 from type_chart import matchup_for_types
 
 BASE = Path(__file__).resolve().parent
-VERSION = "v4.3"
+VERSION = "v4.4"
 
 st.set_page_config(page_title=f"PokeQ {VERSION}", page_icon="⚡", layout="wide")
 
@@ -111,7 +111,7 @@ with left_area:
                 st.caption("無 Quick Move 資料")
             else:
                 qcols = [c for c in ["招名", "屬性", "傷害", "CP", "EPS"] if c in q.columns]
-                st.dataframe(q[qcols], width="stretch", hide_index=True, height=185)
+                st.dataframe(q[qcols], width="stretch", hide_index=True, height=330)
 
         with main_col:
             st.markdown("### Main Move")
@@ -120,7 +120,7 @@ with left_area:
                 st.caption("無 Main Move 資料")
             else:
                 mcols = [c for c in ["招名", "屬性", "傷害"] if c in m.columns]
-                st.dataframe(m[mcols], width="stretch", hide_index=True, height=185)
+                st.dataframe(m[mcols], width="stretch", hide_index=True, height=330)
 
     st.markdown('<div class="search-gap"></div>', unsafe_allow_html=True)
     st.subheader(f"搜尋結果 · {len(result)}")
@@ -135,7 +135,7 @@ with left_area:
         display[show_cols],
         width="stretch",
         hide_index=True,
-        height=500,
+        height=650,
         on_select="rerun",
         selection_mode="single-cell",
         key="pokemon_table",
