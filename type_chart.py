@@ -46,7 +46,7 @@ def matchup_for_types(types):
     defense = _TABLE[types].prod(axis=1).round(2)
 
     out = pd.concat([attack, defense], axis=1)
-    out.columns = ["攻擊", "防守"]
+    out.columns = ["攻擊倍數", "受傷倍數"]
     out.index.name = "屬性"
 
     return out.reset_index()
