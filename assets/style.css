@@ -54,7 +54,7 @@ section[data-testid="stSidebar"] div[data-testid="stImage"] img {
 
 /* Main area */
 h3 {
-    margin-top: 0.55rem !important;
+    margin-top: 0.8rem !important;
     margin-bottom: 0.4rem !important;
 }
 div[data-testid="stDataFrame"] {
