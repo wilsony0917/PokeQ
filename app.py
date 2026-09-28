@@ -7,7 +7,7 @@ from utils import TYPE_ORDER, apply_text_filter, load_all_data
 from type_chart import matchup_for_types
 
 BASE = Path(__file__).resolve().parent
-VERSION = "v4.4"
+VERSION = "v4.6"
 
 st.set_page_config(page_title=f"PokeQ {VERSION}", page_icon="⚡", layout="wide")
 
@@ -16,6 +16,57 @@ if css_path.exists():
     st.markdown(f"<style>{css_path.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
 
 summary, quick, main = load_all_data(BASE / "data")
+
+
+# ------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------
+def get_selected_cell(event):
+    """Return (row_index, column_name) from a Streamlit dataframe selection event.
+
+    Supports the tuple/list shape used by some Streamlit versions and the
+    dict/object-like shape used by others.
+    """
+    try:
+        cells = event.selection.cells
+    except Exception:
+        return None, None
+
+    if not cells:
+        return None, None
+
+    cell = cells[0]
+
+    # Newer/alternate shape: {"row": 0, "column": "招名"}
+    if isinstance(cell, dict):
+        return cell.get("row"), cell.get("column")
+
+    # Tuple/list shape: [0, "招名"] or (0, "招名")
+    if isinstance(cell, (list, tuple)) and len(cell) >= 2:
+        return cell[0], cell[1]
+
+    return None, None
+
+
+def set_move_filter(move_kind, move_name):
+    st.session_state.move_filter_kind = move_kind
+    st.session_state.move_filter_name = str(move_name)
+    st.session_state.selected_name = None
+    st.rerun()
+
+
+# ------------------------------------------------------------
+# Session state
+# ------------------------------------------------------------
+if "selected_name" not in st.session_state:
+    st.session_state.selected_name = None
+
+if "move_filter_kind" not in st.session_state:
+    st.session_state.move_filter_kind = None
+
+if "move_filter_name" not in st.session_state:
+    st.session_state.move_filter_name = None
+
 
 # ------------------------------------------------------------
 # Sidebar
@@ -48,6 +99,19 @@ with st.sidebar:
     main_mode = st.radio("Main 條件", ["any", "all", "not"], horizontal=True, key="main_mode", label_visibility="collapsed")
     main_selected = st.multiselect("選擇 Main Move 屬性", TYPE_ORDER, key="main_selected", label_visibility="collapsed")
 
+    # Show active reverse move search and allow the user to clear it.
+    if st.session_state.move_filter_name:
+        st.divider()
+        move_label = "Quick Move" if st.session_state.move_filter_kind == "quick" else "Main Move"
+        st.caption(f"招式反查：{move_label}")
+        st.markdown(f"**{st.session_state.move_filter_name}**")
+        if st.button("清除招式篩選", use_container_width=True):
+            st.session_state.move_filter_kind = None
+            st.session_state.move_filter_name = None
+            st.session_state.selected_name = None
+            st.rerun()
+
+
 # ------------------------------------------------------------
 # Filter
 # ------------------------------------------------------------
@@ -60,10 +124,29 @@ result = apply_text_filter(result, "屬性", attr_selected, attr_mode)
 result = apply_text_filter(result, "quick", quick_selected, quick_mode)
 result = apply_text_filter(result, "main", main_selected, main_mode)
 
-display = result.copy()
+# Reverse search by clicking a move in the Quick/Main table.
+move_kind = st.session_state.move_filter_kind
+move_name = st.session_state.move_filter_name
 
-if "selected_name" not in st.session_state:
-    st.session_state.selected_name = None
+if move_kind == "quick" and move_name:
+    matched_names = set(
+        quick.loc[quick["招名"].astype(str) == str(move_name), "名字"]
+        .astype(str)
+        .dropna()
+        .unique()
+    )
+    result = result[result["名字"].astype(str).isin(matched_names)]
+
+elif move_kind == "main" and move_name:
+    matched_names = set(
+        main.loc[main["招名"].astype(str) == str(move_name), "名字"]
+        .astype(str)
+        .dropna()
+        .unique()
+    )
+    result = result[result["名字"].astype(str).isin(matched_names)]
+
+display = result.copy()
 
 if result.empty:
     selected_name = None
@@ -72,6 +155,7 @@ else:
     if st.session_state.selected_name not in valid_names:
         st.session_state.selected_name = str(result.iloc[0]["名字"])
     selected_name = st.session_state.selected_name
+
 
 # ------------------------------------------------------------
 # Sidebar artwork
@@ -87,6 +171,7 @@ if selected_name is not None:
         )
         with image_slot.container():
             st.image(sprite_url, width=145)
+
 
 # ------------------------------------------------------------
 # Main layout
@@ -111,7 +196,31 @@ with left_area:
                 st.caption("無 Quick Move 資料")
             else:
                 qcols = [c for c in ["招名", "屬性", "傷害", "CP", "EPS"] if c in q.columns]
-                st.dataframe(q[qcols], width="stretch", hide_index=True, height=330)
+                q_display = q[qcols].reset_index(drop=True)
+
+                q_event = st.dataframe(
+                    q_display,
+                    width="stretch",
+                    hide_index=True,
+                    height=330,
+                    on_select="rerun",
+                    selection_mode="single-cell",
+                    key="quick_move_table",
+                )
+
+                q_row, q_col = get_selected_cell(q_event)
+                if q_row is not None and q_col == "招名":
+                    try:
+                        q_row = int(q_row)
+                        if 0 <= q_row < len(q_display):
+                            clicked_move = str(q_display.iloc[q_row]["招名"])
+                            if not (
+                                st.session_state.move_filter_kind == "quick"
+                                and st.session_state.move_filter_name == clicked_move
+                            ):
+                                set_move_filter("quick", clicked_move)
+                    except (TypeError, ValueError):
+                        pass
 
         with main_col:
             st.markdown("### Main Move")
@@ -120,10 +229,39 @@ with left_area:
                 st.caption("無 Main Move 資料")
             else:
                 mcols = [c for c in ["招名", "屬性", "傷害"] if c in m.columns]
-                st.dataframe(m[mcols], width="stretch", hide_index=True, height=330)
+                m_display = m[mcols].reset_index(drop=True)
+
+                m_event = st.dataframe(
+                    m_display,
+                    width="stretch",
+                    hide_index=True,
+                    height=330,
+                    on_select="rerun",
+                    selection_mode="single-cell",
+                    key="main_move_table",
+                )
+
+                m_row, m_col = get_selected_cell(m_event)
+                if m_row is not None and m_col == "招名":
+                    try:
+                        m_row = int(m_row)
+                        if 0 <= m_row < len(m_display):
+                            clicked_move = str(m_display.iloc[m_row]["招名"])
+                            if not (
+                                st.session_state.move_filter_kind == "main"
+                                and st.session_state.move_filter_name == clicked_move
+                            ):
+                                set_move_filter("main", clicked_move)
+                    except (TypeError, ValueError):
+                        pass
 
     st.markdown('<div class="search-gap"></div>', unsafe_allow_html=True)
-    st.subheader(f"搜尋結果 · {len(result)}")
+
+    if move_name:
+        move_label = "Quick Move" if move_kind == "quick" else "Main Move"
+        st.subheader(f"搜尋結果 · {len(result)} · {move_label}: {move_name}")
+    else:
+        st.subheader(f"搜尋結果 · {len(result)}")
 
     # quick/main intentionally removed from the search-result table.
     show_cols = [
@@ -143,12 +281,16 @@ with left_area:
 
     selected_cells = event.selection.cells
     if selected_cells:
-        pos = selected_cells[0][0]
-        if 0 <= pos < len(display):
-            clicked_name = str(display.iloc[pos]["名字"])
-            if clicked_name != st.session_state.selected_name:
-                st.session_state.selected_name = clicked_name
-                st.rerun()
+        p_row, _ = get_selected_cell(event)
+        try:
+            p_row = int(p_row)
+            if 0 <= p_row < len(display):
+                clicked_name = str(display.iloc[p_row]["名字"])
+                if clicked_name != st.session_state.selected_name:
+                    st.session_state.selected_name = clicked_name
+                    st.rerun()
+        except (TypeError, ValueError):
+            pass
 
 with matchup_area:
     st.markdown("### 屬性相剋")
