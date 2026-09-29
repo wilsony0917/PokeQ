@@ -205,7 +205,7 @@ with left_area:
                     height=330,
                     on_select="rerun",
                     selection_mode="single-cell",
-                    key="quick_move_table",
+                    key=f"quick_move_table_{selected_name}",
                 )
 
                 q_row, q_col = get_selected_cell(q_event)
@@ -238,7 +238,7 @@ with left_area:
                     height=330,
                     on_select="rerun",
                     selection_mode="single-cell",
-                    key="main_move_table",
+                    key=f"main_move_table_{selected_name}",
                 )
 
                 m_row, m_col = get_selected_cell(m_event)
@@ -287,6 +287,11 @@ with left_area:
             if 0 <= p_row < len(display):
                 clicked_name = str(display.iloc[p_row]["名字"])
                 if clicked_name != st.session_state.selected_name:
+                    # Selecting another Pokémon exits move reverse-search mode.
+                    # This also prevents the previous move-cell selection from
+                    # being interpreted as a click on the new Pokémon's move table.
+                    st.session_state.move_filter_kind = None
+                    st.session_state.move_filter_name = None
                     st.session_state.selected_name = clicked_name
                     st.rerun()
         except (TypeError, ValueError):
